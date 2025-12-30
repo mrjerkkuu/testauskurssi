@@ -32,3 +32,5 @@ describe('Pizza Online Tilaus', () => {
     cy.contains('Hinta').should('contain', '9.00');
   });
 });
+
+//tekoälyä jälleen käytetty avuksi
