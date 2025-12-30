@@ -1,64 +1,63 @@
-import { describe, test, expect } from 'vitest';
+import { describe, test, expect, beforeEach } from 'vitest';
 import ravintola from '../Ravintola/ravintola';
 
-// Hinnan laskeminen
-describe('laskeLasku', () => {
-  test('palauttaa oikean summan pelkällä pääruoalla', () => {
-    expect(ravintola.laskeLasku(false, false, false)).toBe(6);
+describe('Ravintola App', () => {
+  // Nollataan ravintolan paikat ennen jokaista testiä, jotta edelliset testit
+  // eivät vaikuta seuraaviin (esim. ravintola ei ole valmiiksi täynnä).
+  beforeEach(() => {
+    // Pakotetaan paikat uudelleen luotavaksi tai tyhjennetään ne
+    ravintola.paikat = ravintola.generoiPaikat();
   });
 
-  test('palauttaa oikean summan kaikilla ruokalajeilla', () => {
-    expect(ravintola.laskeLasku(true, true, true)).toBe(17);
-  });
+  // TESTITAPAUS 1
+  test('syoRavintolassa: onnistuu kun asiakasmäärä (5) mahtuu (raja 15)', () => {
+    const asiakkaita = 5;
+    const tulos = ravintola.syoRavintolassa(asiakkaita);
 
-  test('palauttaa oikean summan alkuruoalla ja juomalla', () => {
-    expect(ravintola.laskeLasku(true, false, true)).toBe(13);
-  });
-
-  test('heittää TypeErrorin väärillä parametreilla', () => {
-    expect(() => ravintola.laskeLasku('teksti', 123, null)).toThrow(TypeError);
-  });
-});
-
-// Satunnaisen arvon haku
-describe('palautaTaulukonSatunnainenArvo', () => {
-  test('palauttaa arvon annetusta taulukosta', () => {
-    const taulukko = ravintola.alkuruoat;
-    const tulos = ravintola.palautaTaulukonSatunnainenArvo(taulukko);
-    expect(taulukko).toContain(tulos);
-  });
-});
-
-// Kapasiteetin tarkistus (Uusi osio)
-describe('tarkistaPaikkojenMaara', () => {
-  test('sallii asiakkaat jos tilaa on', () => {
-    expect(ravintola.tarkistaPaikkojenMaara(10)).toBe(true);
-  });
-
-  test('kieltää asiakkaat jos ravintola on täysi', () => {
-    expect(ravintola.tarkistaPaikkojenMaara(16)).toBe(false);
-  });
-});
-
-// Päätoiminnallisuus
-describe('syoRavintolassa', () => {
-  test('palauttaa taulukon tilauksia, kun asiakkaita mahtuu', () => {
-    const maara = 3;
-    const tulos = ravintola.syoRavintolassa(maara);
+    // Oletus: palauttaa taulukon tilauksia
     expect(Array.isArray(tulos)).toBe(true);
-    expect(tulos).toHaveLength(maara);
-
-    // Tarkistetaan vielä että tilauksen sisällä on summa ja ruoat
-    expect(tulos[0]).toHaveProperty('summa');
-    expect(tulos[0]).toHaveProperty('ruoat');
+    expect(tulos).toHaveLength(asiakkaita);
   });
 
-  test('ei palauta tilauksia jos ravintola on täysi', () => {
-    const tulos = ravintola.syoRavintolassa(50);
-    expect(tulos).toBeUndefined();
+  // TESTITAPAUS 2
+  test('syoRavintolassa: estää tilauksen jos kapasiteetti ylittyy (10 + 6 > 15)', () => {
+    // 1. Ensimmäinen ryhmä (10 henkeä) mahtuu
+    const ryhma1 = ravintola.syoRavintolassa(10);
+    expect(Array.isArray(ryhma1)).toBe(true); // Meni läpi
+
+    // 2. Toinen ryhmä (6 henkeä) -> Yhteensä olisi 16, paikkoja vain 15.
+    // Funktio palauttaa undefined (koska if (!onTilaa) return;), se ei heitä virhettä nykyisessä koodissa.
+    const ryhma2 = ravintola.syoRavintolassa(6);
+
+    expect(ryhma2).toBeUndefined();
+
+    // HUOM: Jos koodisi heittäisi Errorin (throw new Error), testi olisi:
+    // expect(() => ravintola.syoRavintolassa(6)).toThrow();
+  });
+
+  // TESTITAPAUS 3
+  test('laskeLasku: laskee hinnan oikein olioiden perusteella', () => {
+    // Luodaan testioliot (mock objects), joilla on hinta-ominaisuus
+    const alkuruoka = { ruoka: 'TestiAlku', hinta: 5 };
+    const paaruoka = { ruoka: 'TestiPaa', hinta: 10 };
+    const jalkiruoa = { ruoka: 'TestiJalki', hinta: 4 };
+    const juoma = { ruoka: 'TestiJuoma', hinta: 2 };
+
+    // Lasketaan summa: 5 + 10 + 4 + 2 = 21
+    const summa = ravintola.laskeLasku(alkuruoka, paaruoka, jalkiruoa, juoma);
+
+    expect(summa).toBe(21);
+  });
+
+  test('laskeLasku: laskee hinnan oikein kun osa ruoista puuttuu (null)', () => {
+    const paaruoka = { ruoka: 'TestiPaa', hinta: 10 };
+    // Muut ovat null
+
+    const summa = ravintola.laskeLasku(null, paaruoka, null, null);
+
+    expect(summa).toBe(10);
   });
 });
 
-//tekoälyä on käytetty tässä tehtävässä omien testien tarkistamiseen,
-//se myös ehdotti muutamia lisätestejä ja korjausta syoRavintolassa testiin
-// paikkojen maara on kokonaan generoitu tekoälyn avulla. samoin errorin testaus
+// tekoälyä käytetty testien laajuuden avuksi, ja omaien testien oikeellisuuden todentamiseen
+// laitoin tekoälyn kirjoittamaan myös kommentit koska en itse jaksanut xd

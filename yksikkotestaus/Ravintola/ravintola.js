@@ -1,23 +1,37 @@
 /*
 TIKO RAVINTOLA
-OHJELMAKOODI
+OHJELMAKOODI - PÄIVITETTY
 */
 
 const Ravintola = function () {
-  this.alkuruoat = ['Tomaattikeitto', 'LeipÃ¤', 'Vihersalaatti', 'Salsa'];
-  this.paaruoat = [
-    'Kalakeitto',
-    'Makaroonilaatikko',
-    'Kasvispihvi',
-    'Kanasalaatti',
+  // OHJE 4: Muokattu ruokalistat olioiksi, joissa on ruoka ja hinta.
+  // Poistettu vanhat kiinteät hinnat (this.alkuruokaHinta jne).
+  this.alkuruoat = [
+    { ruoka: 'Tomaattikeitto', hinta: 4 },
+    { ruoka: 'Leipä', hinta: 2 },
+    { ruoka: 'Vihersalaatti', hinta: 3 },
+    { ruoka: 'Salsa', hinta: 4 },
   ];
-  this.jalkiruoat = ['HedelmÃ¤salaatti', 'JÃ¤Ã¤telÃ¶', 'Pulla', 'Donitsi'];
-  this.juomat = ['Tee', 'Kahvi', 'Maito', 'Mehu'];
-  this.alkuruokaHinta = 4;
-  this.paaruokaHinta = 6;
-  this.jalkiruokaHinta = 4;
-  this.juomaHinta = 3;
+  this.paaruoat = [
+    { ruoka: 'Kalakeitto', hinta: 8 },
+    { ruoka: 'Makaroonilaatikko', hinta: 7 },
+    { ruoka: 'Kasvispihvi', hinta: 9 },
+    { ruoka: 'Kanasalaatti', hinta: 8 },
+  ];
+  this.jalkiruoat = [
+    { ruoka: 'Hedelmäsalaatti', hinta: 4 },
+    { ruoka: 'Jäätelö', hinta: 3 },
+    { ruoka: 'Pulla', hinta: 2 },
+    { ruoka: 'Donitsi', hinta: 3 },
+  ];
+  this.juomat = [
+    { ruoka: 'Tee', hinta: 2 },
+    { ruoka: 'Kahvi', hinta: 3 },
+    { ruoka: 'Maito', hinta: 1 },
+    { ruoka: 'Mehu', hinta: 2 },
+  ];
   this.paikkojenMaara = 15;
+  this.paikat; // Tähän muuttujaan paikkojen taulukko
 };
 
 /**
@@ -29,16 +43,71 @@ function generoiBoolean() {
 }
 
 /**
- * Jos 'asiakkaidenMaara' on pienempi tai yhtÃ¤suuri kuin 'paikkojenMaara', luo taulukon 'tilaukset'
- * johon tallennetaan yksittÃ¤isen asiakkaan tilaus. tilaaAteria-funktiolle annetaan satunnaiset boolean arvot
- * argumentteina.
+ * OHJE 1: Viimeistele generoiPaikat-funktio JSDocin mukaisesti.
  *
- * Palauttaa pÃ¤Ã¤tteeksi 'tilaukset' taulukon.
- * @param {number} asiakkaidenMaara
- * @return {object} object array
+ * Luo Ravintolan paikat-muuttujaan uuden taulukon, jonka koko määräytyy paikkojenMaara-muuttujan mukaisesti,
+ * ja täyttää taulukon boolean arvolla false.
+ * * @return {boolean[]} Palauttaa luodun taulukon
+ */
+Ravintola.prototype.generoiPaikat = function () {
+  return new Array(this.paikkojenMaara).fill(false);
+};
+
+/**
+ * OHJE 2: varaaPaikat-funktio
+ * * Tarkistaa onko ravintolassa tilaa ja varaa paikat.
+ * * @param {number} varauksenMaara - Varattavien paikkojen lukumäärä (oletus 1)
+ * @return {boolean} Palauttaa true jos varaus onnistui, muuten false
+ */
+Ravintola.prototype.varaaPaikat = function (varauksenMaara) {
+  // 1. Tarkistaa, että paikat-muuttujassa on taulukko. Jos ei ole, luo sen.
+  if (!this.paikat) {
+    this.paikat = this.generoiPaikat();
+  }
+
+  // 2. Jos varauksenMaara:lle ei ole annettu arvoa, asettaa arvoksi 1
+  if (typeof varauksenMaara !== 'number') {
+    varauksenMaara = 1;
+  }
+
+  // 3. Laskee vapaiden paikkojen määrän (false = vapaa)
+  const vapaatPaikat = this.paikat.filter((paikka) => paikka === false).length;
+
+  // 4. Jos vapaiden paikkojen määrä on pienempi kuin varauksenMaara, palauttaa falsen
+  if (vapaatPaikat < varauksenMaara) {
+    console.log(
+      `Ikävä kyllä ravintolaan ei mahdu ${varauksenMaara} asiakasta.`
+    );
+    return false;
+  }
+
+  // 5. Jos tilaa on, käydään läpi paikat-taulukkoa ja muutetaan false-arvoja trueksi
+  let varatutNyt = 0;
+  for (let i = 0; i < this.paikat.length; i++) {
+    // Jos olemme varanneet jo tarpeeksi, lopetetaan silmukka (optimointi)
+    if (varatutNyt >= varauksenMaara) break;
+
+    // Jos paikka on vapaa (false), varataan se
+    if (this.paikat[i] === false) {
+      this.paikat[i] = true;
+      varatutNyt++;
+    }
+  }
+
+  // 6. Palautetaan true
+  console.log(
+    `Tilaa on ${varauksenMaara} asiakkaalle. Tervetuloa ravintolaamme!`
+  );
+  return true;
+};
+
+/**
+ * Ravintolassa syöminen
  */
 Ravintola.prototype.syoRavintolassa = function (asiakkaidenMaara) {
-  const onTilaa = this.tarkistaPaikkojenMaara(asiakkaidenMaara);
+  // OHJE 3: Ota varaaPaikat -funktio käyttöön sille sopivassa kohdassa.
+  const onTilaa = this.varaaPaikat(asiakkaidenMaara);
+
   if (!onTilaa) {
     return;
   }
@@ -47,12 +116,12 @@ Ravintola.prototype.syoRavintolassa = function (asiakkaidenMaara) {
   for (let i = 0; i < asiakkaidenMaara; i++) {
     console.log('-------------------------------------------------------');
     console.log(
-      'Tarjoillaan asiakasta numero ' + (i + 1) + '. MitÃ¤ teille saisi olla?'
+      'Tarjoillaan asiakasta numero ' + (i + 1) + '. Mitä teille saisi olla?'
     );
     tilaukset.push(
       this.tilaaAteria(generoiBoolean(), generoiBoolean(), generoiBoolean())
     );
-    console.log('Asiakkaalle tarjoiltu. HyvÃ¤Ã¤ ruokahalua!');
+    console.log('Asiakkaalle tarjoiltu. Hyvää ruokahalua!');
   }
   console.log('-------------------------------------------------------');
   console.log('Kaikille asiakkaille tarjoiltu!');
@@ -61,52 +130,8 @@ Ravintola.prototype.syoRavintolassa = function (asiakkaidenMaara) {
 };
 
 /**
- * Tarkistaa, ettÃ¤ 'asiakkaidenMaara' on suurempi kuin 0, mutta pienempi tai yhtÃ¤suuri kuin 'paikkojenMaara'.
- *
- * Kirjoittaa konsoliin tulosteen tilanteesta, ja palauttaa onnistumisen boolean arvona.
- *
- * Jos 'asiakkaidenMaara' ei ole numero, heittÃ¤Ã¤ TypeErrorin.
- * @param {number} asiakkaidenMaara
- * @return {boolean} Onnistuminen
- */
-Ravintola.prototype.tarkistaPaikkojenMaara = function (asiakkaidenMaara) {
-  if (typeof asiakkaidenMaara !== 'number') {
-    throw new TypeError();
-  }
-  if (asiakkaidenMaara <= 0) {
-    console.log(
-      'IkÃ¤vÃ¤ kyllÃ¤ emme voi tarjoilla ' + asiakkaidenMaara + ' asiakkaalle.'
-    );
-    return false;
-  } else if (asiakkaidenMaara <= this.paikkojenMaara) {
-    console.log(
-      'Tilaa on ' + asiakkaidenMaara + ' asiakkaalle. Tervetuloa ravintolaamme!'
-    );
-    return true;
-  } else {
-    console.log(
-      'IkÃ¤vÃ¤ kyllÃ¤ ravintolaamme ei mahdu ' +
-        asiakkaidenMaara +
-        ' asiakasta.'
-    );
-    return false;
-  }
-};
-
-/**
- * Ottaa parametreina 3 boolean arvoa, joiden avulla mÃ¤Ã¤ritellÃ¤Ã¤n mitÃ¤ ruokia asiakas tilaa.
- * Jos parametrit eivÃ¤t ole tyyppiÃ¤ boolean, heitetÃ¤Ã¤n TypeError.
- *
- * Tilaukset tallennetaan 'ruoat' taulukkoon boolean parametrien mukaisesti.
- *
- * Lopuksi kutsutaan 'laskeLasku' funktiota, jolla lasketaan tilauksen lasku.
- *
- * Palauttaa objektin, joka sisÃ¤ltÃ¤Ã¤ numeron ja string-taulukon
- *
- * @param {boolean} ottaaAlkuruoan
- * @param {boolean} ottaaJalkiruoan
- * @param {boolean} ottaaJuoman
- * @return {object} object - number, string[]
+ * HUOM: Päivitetty toimimaan uusien ruokaolioiden kanssa.
+ * Hakee satunnaiset ruokaoliot ja laskee niiden hinnan.
  */
 Ravintola.prototype.tilaaAteria = function (
   ottaaAlkuruoan,
@@ -122,85 +147,77 @@ Ravintola.prototype.tilaaAteria = function (
   }
 
   const ruoat = [];
-  let ruoka;
+
+  // Nämä muuttujat pitävät sisällään koko oliot (esim. {ruoka: 'Leipä', hinta: 2})
+  let valittuAlkuruoka = null;
+  let valittuPaaruoka = null;
+  let valittuJalkiruoka = null;
+  let valittuJuoma = null;
 
   if (ottaaAlkuruoan) {
-    ruoka = this.palautaTaulukonSatunnainenArvo(this.alkuruoat);
-    console.log('Ottaisin alkuruoaksi: ' + ruoka);
-    ruoat.push(ruoka);
+    valittuAlkuruoka = this.palautaTaulukonSatunnainenArvo(this.alkuruoat);
+    console.log('Ottaisin alkuruoaksi: ' + valittuAlkuruoka.ruoka);
+    ruoat.push(valittuAlkuruoka.ruoka);
   }
 
-  ruoka = this.palautaTaulukonSatunnainenArvo(this.paaruoat);
-  console.log('Ottaisin pÃ¤Ã¤ruoaksi: ' + ruoka);
-  ruoat.push(ruoka);
+  // Pääruoka otetaan aina
+  valittuPaaruoka = this.palautaTaulukonSatunnainenArvo(this.paaruoat);
+  console.log('Ottaisin pääruoaksi: ' + valittuPaaruoka.ruoka);
+  ruoat.push(valittuPaaruoka.ruoka);
 
   if (ottaaJalkiruoan) {
-    ruoka = this.palautaTaulukonSatunnainenArvo(this.jalkiruoat);
-    console.log('Ottaisin jÃ¤lkiruoaksi: ' + ruoka);
-    ruoat.push(ruoka);
+    valittuJalkiruoka = this.palautaTaulukonSatunnainenArvo(this.jalkiruoat);
+    console.log('Ottaisin jälkiruoaksi: ' + valittuJalkiruoka.ruoka);
+    ruoat.push(valittuJalkiruoka.ruoka);
   }
 
   if (ottaaJuoman) {
-    ruoka = this.palautaTaulukonSatunnainenArvo(this.juomat);
-    console.log('Ottaisin juomaksi: ' + ruoka);
-    ruoat.push(ruoka);
+    valittuJuoma = this.palautaTaulukonSatunnainenArvo(this.juomat);
+    console.log('Ottaisin juomaksi: ' + valittuJuoma.ruoka);
+    ruoat.push(valittuJuoma.ruoka);
   }
 
-  const summa = this.laskeLasku(ottaaAlkuruoan, ottaaJalkiruoan, ottaaJuoman);
+  // Kutsutaan laskeLasku-funktiota oikeilla olioilla
+  const summa = this.laskeLasku(
+    valittuAlkuruoka,
+    valittuPaaruoka,
+    valittuJalkiruoka,
+    valittuJuoma
+  );
 
   return { summa, ruoat };
 };
 
 /**
- * Palauttaa satunnaisen arvon annetusta taulukosta
- * @param {string[]} taulukko
- * @return {string}
+ * Palauttaa satunnaisen arvon annetusta taulukosta.
+ * Nyt palauttaa olion {ruoka, hinta} eikä pelkkää stringiä.
  */
 Ravintola.prototype.palautaTaulukonSatunnainenArvo = function (taulukko) {
   return taulukko[Math.floor(Math.random() * taulukko.length)];
 };
 
 /**
- * Laskee summan annettujen boolean parametrien mukaisesti.
- * Jos parametrit eivÃ¤t ole tyyppiÃ¤ boolean, heittÃ¤Ã¤ TypeErrorin.
- *
- * 'loppuSumma' muuttujaan lisÃ¤tÃ¤Ã¤n automaattisesti 'paaruokaHinta', ja loput hinnat sitten parametrien mukaisesti.
- *
- * Palauttaa lopussa 'loppuSumma'.
- *
- * @param {boolean} ottiAlkuruoan
- * @param {boolean} ottiJalkiruoan
- * @param {boolean} ottiJuoman
+ * HUOM: Päivitetty laskemaan hinta parametreina saaduista olioista.
+ * Vanha versio ei enää toiminut, koska kiinteitä hintoja ei ole.
+ * * @param {object|null} alkuruoka - Ruokaolio tai null
+ * @param {object} paaruoka - Ruokaolio
+ * @param {object|null} jalkiruoka - Ruokaolio tai null
+ * @param {object|null} juoma - Ruokaolio tai null
  * @return {number}
  */
 Ravintola.prototype.laskeLasku = function (
-  ottiAlkuruoan,
-  ottiJalkiruoan,
-  ottiJuoman
+  alkuruoka,
+  paaruoka,
+  jalkiruoka,
+  juoma
 ) {
-  if (
-    typeof ottiAlkuruoan !== 'boolean' ||
-    typeof ottiJalkiruoan !== 'boolean' ||
-    typeof ottiJuoman !== 'boolean'
-  ) {
-    throw new TypeError();
-  }
-
   let loppuSumma = 0;
 
-  loppuSumma += this.paaruokaHinta;
-
-  if (ottiAlkuruoan) {
-    loppuSumma += this.alkuruokaHinta;
-  }
-
-  if (ottiJalkiruoan) {
-    loppuSumma += this.jalkiruokaHinta;
-  }
-
-  if (ottiJuoman) {
-    loppuSumma += this.juomaHinta;
-  }
+  // Lisätään hinnat, jos ruoka on valittu (eli parametri ei ole null)
+  if (paaruoka) loppuSumma += paaruoka.hinta;
+  if (alkuruoka) loppuSumma += alkuruoka.hinta;
+  if (jalkiruoka) loppuSumma += jalkiruoka.hinta;
+  if (juoma) loppuSumma += juoma.hinta;
 
   return loppuSumma;
 };
