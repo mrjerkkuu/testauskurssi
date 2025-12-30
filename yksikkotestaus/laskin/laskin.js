@@ -24,6 +24,7 @@ Laskin.prototype.plusLasku = function (a, b) {
  * @return {number} a - b erotus
  */
 Laskin.prototype.miinusLasku = function (a, b) {
+  const tulos = a - b;
   console.log(a + ' - ' + b + ' = ' + tulos);
   return tulos;
 };
