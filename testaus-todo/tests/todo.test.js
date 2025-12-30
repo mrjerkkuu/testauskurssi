@@ -83,3 +83,4 @@ describe('ToDo Sovelluksen logiikka', () => {
 });
 
 //testien luomiseen on käytetty tekoälyä avuksi, ideointiin ja kommentointiin
+//keksimme ne siis yhdessä teköälyn kanssa ja aloin kirjoittamaan, korjaten virheitä tekoälyllä
