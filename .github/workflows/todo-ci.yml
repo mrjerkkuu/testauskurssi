@@ -6,12 +6,15 @@ on:
       - main
       - master
       - test-branch
-      # Trigger on any branch starting with test
       - 'test*'
+    paths:
+      - 'testaus-todo/**'
   pull_request:
     branches:
       - main
       - master
+    paths:
+      - 'testaus-todo/**'
 
 jobs:
   unit-tests:
