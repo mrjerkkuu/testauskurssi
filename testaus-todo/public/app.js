@@ -75,19 +75,45 @@
     document.getElementById('empty-state')
   );
 
+  const filterLowBtn = document.getElementById('filter-low');
+  const filterMediumBtn = document.getElementById('filter-medium');
+  const filterHighBtn = document.getElementById('filter-high');
+  const filterAllBtn = document.getElementById('filter-all');
+
   // State
   let tasks = loadTasks();
+  let activeFilter = null;
 
   // Render
   function render() {
     list.innerHTML = '';
+
+    // Filter
+    let displayTasks = tasks;
+    if (activeFilter) {
+      displayTasks = tasks.filter((t) => t.priority === activeFilter);
+    }
+
     if (!tasks.length) {
       emptyState.style.display = 'block';
       return;
     }
     emptyState.style.display = 'none';
 
-    tasks
+    // Update filter buttons UI
+    if (filterLowBtn) {
+      [filterLowBtn, filterMediumBtn, filterHighBtn, filterAllBtn].forEach(
+        (b) => b.classList.add('secondary')
+      );
+      if (activeFilter === 'low') filterLowBtn.classList.remove('secondary');
+      else if (activeFilter === 'medium')
+        filterMediumBtn.classList.remove('secondary');
+      else if (activeFilter === 'high')
+        filterHighBtn.classList.remove('secondary');
+      else filterAllBtn.classList.remove('secondary');
+    }
+
+    displayTasks
       .sort((a, b) => {
         // Not-done first, then by priority (high->low), then newest first
         if (a.completed !== b.completed) return a.completed ? 1 : -1;
@@ -247,6 +273,26 @@
       render();
     }
   });
+
+  // Filter listeners
+  if (filterLowBtn) {
+    filterLowBtn.addEventListener('click', () => {
+      activeFilter = 'low';
+      render();
+    });
+    filterMediumBtn.addEventListener('click', () => {
+      activeFilter = 'medium';
+      render();
+    });
+    filterHighBtn.addEventListener('click', () => {
+      activeFilter = 'high';
+      render();
+    });
+    filterAllBtn.addEventListener('click', () => {
+      activeFilter = null;
+      render();
+    });
+  }
 
   // Initial paint
   render();
